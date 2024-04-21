@@ -421,7 +421,12 @@ export default function Command() {
         <Form.Dropdown.Item value="swf" title="Shockwave Flash (.swf)" />
       </Form.Dropdown>
 
-      <Form.Dropdown id="sur" title="File type:" defaultValue="" info="Find pages that you are free to use yourself.">
+      <Form.Dropdown
+        id="sur"
+        title="Usage rights:"
+        defaultValue=""
+        info="Find pages that you are free to use yourself."
+      >
         <Form.Dropdown.Item value="" title="not filtered by licence" />
         <Form.Dropdown.Item value="f" title="free to use or share" />
         <Form.Dropdown.Item value="fc" title="free to use or share, even commercially" />
