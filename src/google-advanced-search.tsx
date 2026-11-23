@@ -296,7 +296,6 @@ const regions: Option[] = [
   { value: "countryZW", title: "Zimbabwe" },
 ];
 
-
 type SearchParams = {
   as_epq: string;
   as_eq: string;
