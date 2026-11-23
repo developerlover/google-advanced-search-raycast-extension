@@ -1,54 +1,42 @@
 import { Action, ActionPanel, Form, Icon, open } from "@raycast/api";
 
-interface QueryParams {
-  as_q: string;
+type SearchParams = {
   as_epq: string;
-  as_oq: string;
   as_eq: string;
-  as_sitesearch: string;
+  as_filetype: string;
+  as_nhi: string;
+  as_nlo: string;
+  as_occt_input: string;
+  as_oq: string;
+  as_q: string;
   as_qdr: string;
+  as_sitesearch: string;
+  cr: string;
+  lr: string;
+  sur: string;
+};
+
+function buildSearchUrl(values: SearchParams): string {
+  const searchParams = new URLSearchParams();
+
+  Object.keys(values).forEach((key) => {
+    const value = values[key as keyof SearchParams];
+    searchParams.append(key, value);
+  });
+
+  return `https://www.google.com/search?${searchParams.toString()}`;
 }
 
-function formatParameter(parameterText: string): string {
-  return parameterText.replaceAll(" ", "+");
-}
-
-function buildUrl(values: QueryParams): string {
-  let searchUrl = "https://www.google.com/search";
-
-  let firstParamenter: boolean = true;
-
-  for (const key in values) {
-    const value = key as keyof QueryParams;
-
-    if (!values.hasOwnProperty(key)) {
-      continue;
-    }
-
-    if (firstParamenter) {
-      searchUrl += "?";
-    } else {
-      searchUrl += "&";
-    }
-
-    searchUrl += `${key}=${formatParameter(values[value])}`;
-
-    firstParamenter = false;
+function OpenSearchInBrowserAction() {
+  async function handleSubmit(values: SearchParams) {
+    const url = buildSearchUrl(values);
+    open(url);
   }
 
-  return searchUrl;
+  return <Action.SubmitForm icon={Icon.Globe} title="Search" onSubmit={handleSubmit} />;
 }
 
 export default function Command() {
-  function OpenSearchInBrowserAction() {
-    async function handleSubmit(values: QueryParams) {
-      const searchUrl = buildUrl(values);
-      open(searchUrl);
-    }
-
-    return <Action.SubmitForm icon={Icon.Globe} title="Search" onSubmit={handleSubmit} />;
-  }
-
   return (
     <Form
       navigationTitle="Google Advanced Search"
@@ -58,28 +46,68 @@ export default function Command() {
         </ActionPanel>
       }
     >
-      <Form.TextField id="as_q" title="All these words:" />
-
-      <Form.TextField id="as_epq" title="This exact word or phrase:" />
-
-      <Form.TextField id="as_oq" title="Any of these words:" />
-
-      <Form.TextField id="as_eq" title="None of these words:" />
-
-      <Form.Separator />
-
-      <Form.TextField id="as_nlo" title="Numbers ranging from:" />
-
-      <Form.TextField id="as_nhi" title="Numbers ranging to:" info="" />
+      {/* WORD SEARCH */}
 
       <Form.Description
-        title="Numbers ranging"
-        text="Put two full stops between the numbers and add a unit of measurement: 10..35 kg, £300..£500, 2010..2011"
+        title="Word Search"
+        text="Specify keywords to include, exact phrases, optional words, and exclusions to streamline your search."
+      />
+
+      <Form.TextField
+        id="as_q"
+        title="All These Words"
+        info="Enter all the words that must appear in the search results. E.g.: electric car reviews"
+      />
+
+      <Form.TextField
+        id="as_epq"
+        title="This Exact Phrase"
+        info="Enter an exact phrase that must be found in the results. E.g.: climate change legislation"
+      />
+
+      <Form.TextField
+        id="as_oq"
+        title="Any of These Words"
+        info="Enter words, any of which you're interested in finding within the results. E.g.: iPhone Samsung smartphone"
+      />
+
+      <Form.TextField
+        id="as_eq"
+        title="None of These Words"
+        info="List words you want to exclude from your search, helping to eliminate unwanted terms. E.g.: nuts dairy shellfish"
       />
 
       <Form.Separator />
 
-      <Form.Dropdown id="lr" title="Language:" defaultValue="" info="Find pages in the language that you select.">
+      {/* NUMERIC RANGE */}
+
+      <Form.Description
+        title="Numeric Range"
+        text="Set minimum and maximum numeric limits, such as price or date, to narrow down search results."
+      />
+
+      <Form.TextField
+        id="as_nlo"
+        title="Numbers Ranging from"
+        info="Set the start of a numerical range for your search. You can add a unit of measurement: 2022, $100, 10 kg"
+      />
+
+      <Form.TextField
+        id="as_nhi"
+        title="Numbers Ranging to"
+        info="Set the end of a numerical range for your search. You can add a unit of measurement: 2024, $300, 35 kg"
+      />
+
+      <Form.Separator />
+
+      {/* SEARCH FILTERS */}
+
+      <Form.Description
+        title="Search Filters"
+        text="Filter results by language, region, site, last update or format to customize search outcomes."
+      />
+
+      <Form.Dropdown id="lr" title="Language" defaultValue="" info="Find pages in the language that you select.">
         <Form.Dropdown.Item value="" title="any language" />
         <Form.Dropdown.Item value="lang_af" title="Afrikaans" />
         <Form.Dropdown.Item value="lang_ar" title="Arabic" />
@@ -129,7 +157,7 @@ export default function Command() {
         <Form.Dropdown.Item value="lang_vi" title="Vietnamese" />
       </Form.Dropdown>
 
-      <Form.Dropdown id="cr" title="Region:" defaultValue="" info="Find pages published in a particular region.">
+      <Form.Dropdown id="cr" title="Region" defaultValue="" info="Find pages published in a particular region.">
         <Form.Dropdown.Item value="" title="any region" />
         <Form.Dropdown.Item value="countryAF" title="Afghanistan" />
         <Form.Dropdown.Item value="countryAL" title="Albania" />
@@ -372,7 +400,7 @@ export default function Command() {
 
       <Form.Dropdown
         id="as_qdr"
-        title="Last update:"
+        title="Last Update"
         defaultValue="all"
         info="Find pages updated within the time that you specify."
       >
@@ -385,13 +413,13 @@ export default function Command() {
 
       <Form.TextField
         id="as_sitesearch"
-        title="Site or domain:"
+        title="Site or Domain"
         info="Search one site (like wikipedia.org ) or limit your results to a domain like .edu, .org or .gov"
       />
 
       <Form.Dropdown
         id="as_occt_input"
-        title="Terms appearing:"
+        title="Terms Appearing"
         defaultValue="any"
         info="Search for terms in the whole page, page title or web address, or links to the page you're looking for."
       >
@@ -404,7 +432,7 @@ export default function Command() {
 
       <Form.Dropdown
         id="as_filetype"
-        title="File type:"
+        title="File Type"
         defaultValue=""
         info="Find pages in the format that you prefer."
       >
@@ -423,7 +451,7 @@ export default function Command() {
 
       <Form.Dropdown
         id="sur"
-        title="Usage rights:"
+        title="Usage Rights"
         defaultValue=""
         info="Find pages that you are free to use yourself."
       >
